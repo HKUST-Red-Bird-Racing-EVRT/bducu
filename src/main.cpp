@@ -20,6 +20,7 @@
 MCP2515 can_internal(PIN_CAN1_CS);
 MCP2515 can_external(PIN_CAN0_CS);
 can_frame rx_slave_frame;
+can_frame tx_temp_frame;
 
 AmsState ams;
 AmsHelper ams_helper(ams);
@@ -65,9 +66,19 @@ void setup()
   pinMode(PIN_AIR_PRE, OUTPUT);
   pinMode(PIN_AMS_ERR, OUTPUT);
   pinMode(PIN_SDC, INPUT);
+  pinMode(TS_ACT, INPUT);
 
   ams_helper.setAIR(AIRState::INIT); // Set initial AIR state to PRECHARGE
   can_external_helper.setHost(); // Determine if the host is VCU or CHARGER
+  while (!digitalRead(TS_ACT))
+  {
+    tx_temp_frame.can_id = 0x100;
+    tx_temp_frame.can_dlc = 1;
+    tx_temp_frame.data[0] = 0x67;
+    can_external.sendMessage(&tx_temp_frame);
+    // Wait for the TS_ACT pin to go HIGH before proceeding
+    delay(10); // Small delay to avoid busy waiting
+  }
 }
 
 void loop()
@@ -82,6 +93,12 @@ void loop()
   - If timeout, set fault flag and fault slave
   - If no timeout, communicate with vcu
   */
+
+  tx_temp_frame.can_id = 0x200;
+  tx_temp_frame.can_dlc = 1;
+  tx_temp_frame.data[0] = static_cast<uint8_t>(ams.air_state);
+  
+  can_external.sendMessage(&tx_temp_frame); // Send a temporary frame to the external CAN bus
 
   ams_helper.updateAIR(); // Update the AIR state based on conditions
 
