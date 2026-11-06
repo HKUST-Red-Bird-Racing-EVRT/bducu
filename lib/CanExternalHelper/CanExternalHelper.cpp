@@ -74,3 +74,43 @@ void CanExternalHelper::sendHostData()
 
     can_external.sendMessage(&send_temperature_frame); // Send the CAN frame to the slave
 }
+
+void CanExternalHelper::sendWaitingTsAct()
+{
+    can_frame send_waiting_frame = {
+        CAN_EXTERNAL_WAITING_TS_ACT_ADDRESS, 
+        1,                                   // Data length code (DLC)
+        0x67                                 // placeholder
+    };
+    can_external.sendMessage(&send_waiting_frame);
+}
+
+void CanExternalHelper::sendState()
+{
+    can_frame send_state_frame = {
+        CAN_EXTERNAL_STATE_ADDRESS,             
+        1,                                      // Data length code (DLC)
+        static_cast<uint8_t>(ams.air_state)     // AIR
+    };
+    can_external.sendMessage(&send_state_frame);
+}
+
+void CanExternalHelper::sendDebug()
+{
+    // raw ADC
+    uint16_t raw_ac_iso = analogRead(PIN_AC_ISO);
+    uint16_t raw_tc_iso = analogRead(PIN_TC_ISO);
+    can_frame send_debug_frame = {
+        CAN_EXTERNAL_DEBUG_ADDRESS,                 // CAN ID
+        8,                                          // Data length code (DLC)
+        raw_ac_iso & 0xFF,
+        (raw_ac_iso >> 8) & 0xFF,
+        raw_tc_iso & 0xFF,
+        (raw_tc_iso >> 8) & 0xFF,
+        ams.fault_flags,
+        static_cast<uint8_t>(digitalRead(PIN_SDC) == SDC_CLOSED),
+        static_cast<uint8_t>(digitalRead(TS_ACT)),
+        static_cast<uint8_t>(ams.air_state)
+    };
+    can_external.sendMessage(&send_debug_frame);
+}

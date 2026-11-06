@@ -56,10 +56,24 @@ void CanInternalHelper::drainCanBuffer()
         }
     }
 
+    start = millis(); // reset
     while (digitalRead(PIN_INT_0) == LOW)
     {
+        if (millis() - start > CAN_TIMEOUT_MAX)
+        {
+            can_internal.clearMERR();
+            can_internal.clearERRIF();
+            ams.fault_flags |= CAN_TIMEOUT_FAULT_BIT;
+            return;
+        }
+
         can_frame frame;
-        if (can_internal.readMessage(&frame) == MCP2515::ERROR_OK)
+        if (can_internal.readMessage(&frame) != MCP2515::ERROR_OK)
+        {
+            can_internal.clearMERR();
+            can_internal.clearERRIF();
+        }
+        else
         {
             // Read and discard messages until the buffer is empty
             if (frame.can_id >= CAN_INTERNAL_SLAVE_ADDRESS)

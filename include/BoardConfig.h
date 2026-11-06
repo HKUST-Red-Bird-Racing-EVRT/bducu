@@ -20,6 +20,7 @@
 // Error Pin
 #define PIN_AMS_ERR PIN_PD0
 #define PIN_SDC PIN_PB1
+#define SDC_CLOSED LOW
 
 #define PIN_AC_ISO PIN_PC0
 #define PIN_TC_ISO PIN_PC1
@@ -32,5 +33,6 @@
 #define TS_AC_RATIO 19/20
 #define PRECHARGE_TIMEOUT 500 // ms
 #define VOLTAGE_UV 3500 // Undervoltage threshold in mV
+#define AIR_STATE_PERIOD 100
 
 #endif // BOARDCONFIG_H

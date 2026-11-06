@@ -107,7 +107,7 @@ void AmsHelper::setAIR(AIRState new_state)
 void AmsHelper::updateAIR()
 {
     // Applies to all states, if SDC is closed, go to DISCHARGE state
-    if (digitalRead(PIN_SDC) == LOW)
+    if (digitalRead(PIN_SDC) != SDC_CLOSED)
     {
         ams.sdc_active = false;
         ams.fault_flags |= SDC_FAULT_BIT;
@@ -125,7 +125,7 @@ void AmsHelper::updateAIR()
             digitalWrite(PIN_AMS_ERR, HIGH); // Set AMS_ERR pin high if any fault is active
         }
 
-        else if (digitalRead(PIN_SDC) == HIGH && !ams.fault_flags)
+        else if (digitalRead(PIN_SDC) == SDC_CLOSED && !ams.fault_flags)
         {
             setAIR(AIRState::PRECHARGE);
         }
