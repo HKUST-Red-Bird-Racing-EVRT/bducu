@@ -102,14 +102,13 @@ void CanExternalHelper::sendDebug()
     uint16_t raw_tc_iso = analogRead(PIN_TC_ISO);
     can_frame send_debug_frame = {
         CAN_EXTERNAL_DEBUG_ADDRESS,                 // CAN ID
-        8,                                          // Data length code (DLC)
+        7,                                          // Data length code (DLC)
         raw_ac_iso & 0xFF,
         (raw_ac_iso >> 8) & 0xFF,
         raw_tc_iso & 0xFF,
         (raw_tc_iso >> 8) & 0xFF,
         ams.fault_flags,
         static_cast<uint8_t>(digitalRead(PIN_SDC) == SDC_CLOSED),
-        static_cast<uint8_t>(digitalRead(TS_ACT)),
         static_cast<uint8_t>(ams.air_state)
     };
     can_external.sendMessage(&send_debug_frame);

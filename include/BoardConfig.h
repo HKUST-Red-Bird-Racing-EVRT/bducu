@@ -25,9 +25,6 @@
 #define PIN_AC_ISO PIN_PC0
 #define PIN_TC_ISO PIN_PC1
 
-// Inputs
-#define TS_ACT PIN_PB2
-
 // Constant Definitions
 #define SHUTDOWN_VOLTAGE_THRESHOLD 90
 #define TS_AC_RATIO 19/20

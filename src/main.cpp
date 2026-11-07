@@ -66,17 +66,12 @@ void setup()
   pinMode(PIN_AIR_PRE, OUTPUT);
   pinMode(PIN_AMS_ERR, OUTPUT);
   pinMode(PIN_SDC, INPUT);
-  pinMode(TS_ACT, INPUT);
+
+  digitalWrite(PIN_AMS_ERR, LOW); // Set AMS_ERR pin low initially
   can_external_helper.sendDebug(); // Send initial debug information to the host (VCU or CHARGER)
 
   ams_helper.setAIR(AIRState::INIT); // Set initial AIR state to PRECHARGE
   can_external_helper.setHost();     // Determine if the host is VCU or CHARGER
-  while (digitalRead(TS_ACT))
-  {
-    can_external_helper.sendWaitingTsAct(); // Send waiting message until TS_ACT goes HIGH
-    // Wait for the TS_ACT pin to go HIGH before proceeding
-    delay(10); // Small delay to avoid busy waiting
-  }
   
 }
 
