@@ -67,18 +67,17 @@ void setup()
   pinMode(PIN_AMS_ERR, OUTPUT);
   pinMode(PIN_SDC, INPUT);
   pinMode(TS_ACT, INPUT);
+  can_external_helper.sendDebug(); // Send initial debug information to the host (VCU or CHARGER)
 
   ams_helper.setAIR(AIRState::INIT); // Set initial AIR state to PRECHARGE
-  can_external_helper.setHost(); // Determine if the host is VCU or CHARGER
-  while (!digitalRead(TS_ACT))
+  can_external_helper.setHost();     // Determine if the host is VCU or CHARGER
+  while (digitalRead(TS_ACT))
   {
-    tx_temp_frame.can_id = 0x100;
-    tx_temp_frame.can_dlc = 1;
-    tx_temp_frame.data[0] = 0x67;
-    can_external.sendMessage(&tx_temp_frame);
+    can_external_helper.sendWaitingTsAct(); // Send waiting message until TS_ACT goes HIGH
     // Wait for the TS_ACT pin to go HIGH before proceeding
     delay(10); // Small delay to avoid busy waiting
   }
+  
 }
 
 void loop()
@@ -94,21 +93,19 @@ void loop()
   - If no timeout, communicate with vcu
   */
 
-  tx_temp_frame.can_id = 0x200;
-  tx_temp_frame.can_dlc = 1;
-  tx_temp_frame.data[0] = static_cast<uint8_t>(ams.air_state);
-  
-  can_external.sendMessage(&tx_temp_frame); // Send a temporary frame to the external CAN bus
+  can_external_helper.sendState(); // Send the current state to the host (VCU or CHARGER)
+  can_external_helper.sendDebug(); // Send debug information to the host (VCU or CHARGER)
 
   ams_helper.updateAIR(); // Update the AIR state based on conditions
 
+  /*
   for (uint8_t frame_index = 0; frame_index < NUM_SLAVE_FRAME; ++frame_index)
   {
     // if frame dropped, keep looping for 3-4 times to request the slave data again, and drain the buffer
     uint8_t retry_count = 0;
     while (retry_count < 4)
     {
-      ams.fault_flags &= ~CAN_TIMEOUT_FAULT_BIT;// Clear the CAN timeout fault flag if no timeout occurred
+      ams.fault_flags &= ~CAN_TIMEOUT_FAULT_BIT; // Clear the CAN timeout fault flag if no timeout occurred
       can_internal_helper.requestSlaveData(frame_index);
       can_internal_helper.drainCanBuffer();
       if (ams.fault_flags & CAN_TIMEOUT_FAULT_BIT)
@@ -121,7 +118,6 @@ void loop()
       }
     }
   }
-  
 
   if (ams.fault_flags)
   {
@@ -131,13 +127,13 @@ void loop()
   {
     digitalWrite(PIN_AMS_ERR, LOW); // Set AMS_ERR pin low if no fault is active
   }
-  */
+  
 
   // Normal operation, e.g., send data to VCU, perform other tasks, etc.
   ams_helper.updateMaxMinCellVoltages();
   ams_helper.updateMaxMinTemperatures();
   ams_helper.updateBatterySOC(analogRead(PIN_HALL_LO), analogRead(PIN_HALL_HI));
-
+  */
   if (millis() - ams.timestamp >= 1000) // Send data to VCU every 1 second
   {
     can_external_helper.sendHostData();
