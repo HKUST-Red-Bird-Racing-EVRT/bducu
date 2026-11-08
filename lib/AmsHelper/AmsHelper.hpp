@@ -3,6 +3,7 @@
 
 #include "AmsState.hpp"
 #include "BoardConfig.h"
+#include "Interp.hpp"
 #include <Arduino.h>
 
 #define TIME_SETUP 1000
@@ -14,21 +15,59 @@ constexpr float VCC = 5.0;
 constexpr uint16_t ADC_RESOLUTION = 1023;
 constexpr uint16_t AC_MIN_START_VOLTAGE_THRESHOLD = (double)VOLTAGE_UV * NUM_VCELL * NUM_SLAVE / VOLTAGE_DIVSOR / mV_PER_V / VCC * ADC_RESOLUTION; // 3700mV * 14 * 10 / 127 = 4070mV
 
-class AmsHelper {
-    public:
-        AmsHelper(AmsState &ams_);
-        AmsHelper() = delete; // Delete the default constructor to prevent its use
-        void resetCellBal();
-        void updateMaxMinCellVoltages();
-        void updateMaxMinTemperatures();
-        void updateBatterySOC(int8_t hall_lo, int8_t hall_hi);
-        void setAIR(AIRState new_state);
-        void updateAIR();
+constexpr TablePoint<uint8_t, uint8_t> SOC_TO_VCU_TABLE[2] = 
+{
+    {0, 27},
+    {100, 227}
+};
 
-    private:
-        AmsState &ams;
-        uint32_t precharge_start = 0; // millis() when PRECHARGE was entered
+constexpr TablePoint<uint16_t, uint8_t> ACTS_VOLTAGE_TO_VCU_TABLE[2] = 
+{
+    {90 / VOLTAGE_DIVSOR / VCC * ADC_RESOLUTION, 0},    // Minimum Analog Read Value: 144
+    {600 / VOLTAGE_DIVSOR / VCC * ADC_RESOLUTION, 255}  // Maximum Analog Read Value: 966
+};
 
+constexpr TablePoint<int8_t, int8_t> HALL_SENSOR_TO_VCU_TABLE[2] = 
+{
+    {-128, -128},
+    {127, 127}
+};
+
+constexpr TablePoint<uint16_t, uint8_t> MAX_MIN_VOLTAGE_TO_VCU_TABLE[2] = 
+{
+    {3500, 0},
+    {4300, 256}
+};
+
+constexpr TablePoint<uint16_t, uint8_t> MAX_MIN_TEMPERATURE_TO_VCU_TABLE[5] = 
+{
+    {0, 0},
+    {25, 1},
+    {50, 2},
+    {75, 3},
+    {100, 4}
+};
+
+class AmsHelper
+{
+public:
+    AmsHelper(AmsState &ams_);
+    AmsHelper() = delete; // Delete the default constructor to prevent its use
+    void resetCellBal();
+    void updateMaxMinCellVoltages();
+    void updateMaxMinTemperatures();
+    void updateBatterySOC(int8_t hall_lo, int8_t hall_hi);
+    void setAIR(AIRState new_state);
+    void updateAIR();
+    constexpr uint8_t scaleSOCToVCU(uint8_t soc);
+    constexpr uint8_t scaleACTSVoltageToVCU(uint16_t value);
+    constexpr int8_t scaleHallSensorToVCU(int8_t coloumb_count);
+    constexpr uint8_t scaleMaxMinVoltageToVCU(uint16_t value);
+    constexpr uint8_t scaleMaxMinTemperatureToVCU(uint16_t value);
+
+private:
+    AmsState &ams;
+    uint32_t precharge_start = 0; // millis() when PRECHARGE was entered
 };
 
 #endif // AMSHELPER_HPP

@@ -5,29 +5,11 @@ CanExternalHelper::CanExternalHelper(MCP2515 &can_external_, AmsState &ams_, Ams
 {
 }
 
-void CanExternalHelper::setHost()
+void CanExternalHelper::waitHost()
 {
     can_frame read_frame;
 
-    // Create a CAN frame to send the host status to the slaves
-    can_frame send_frame = {
-        CAN_EXTERNAL_DETERMINE_HOST_ADDRESS, // CAN ID for the host
-        1,                              // Data length code (DLC)
-        0x00                            // Reserved bytes (can be used for additional data if needed)
-    };
-
-    can_external.sendMessage(&send_frame); // Send the CAN frame to the slave
-
-    uint32_t start = millis();
-    while (digitalRead(PIN_INT_1) == HIGH)
-    {
-        if (millis() - start > CAN_HOST_TIMEOUT)
-        {
-            return;
-        }
-    }
-
-    if (can_external.readMessage(&read_frame) == MCP2515::ERROR_OK && read_frame.can_id == CAN_EXTERNAL_DETERMINE_HOST_ADDRESS)
+    while (!(can_external.readMessage(&read_frame) == MCP2515::ERROR_OK && read_frame.can_id == CAN_EXTERNAL_DETERMINE_HOST_ADDRESS))
     {
         // Process the response from the slave
         // For example, you can check the data in read_frame.data to determine if the host is VCU or CHARGER
@@ -36,7 +18,38 @@ void CanExternalHelper::setHost()
     }
 }
 
-void CanExternalHelper::sendHostData()
+void CanExternalHelper::sendVCUData()
+{
+    // Create a CAN frame to send the host data to the slaves
+    if (ams.fault_flags)
+    {
+        // If SDC fault is active, send a panic message to the slaves
+        can_frame send_panic_frame = {
+            CAN_EXTERNAL_PANIC_ADDRESS, // CAN ID for the panic message
+            1,                          // Data length code (DLC)
+            ams.fault_flags             // Panic data (can be customized as needed)
+        };
+
+        can_external.sendMessage(&send_panic_frame); // Send the CAN frame to the slave
+    }
+    
+    can_frame send_vcu_frame = {
+        CAN_EXTERNAL_VCU_ADDRESS, // CAN ID for the VCU data
+        8,                        // Data length code (DLC)
+        ams_helper.scaleSOCToVCU(ams.battery_soc), // Scaled SOC
+        ams_helper.scaleACTSVoltageToVCU(ams.raw_ac_voltage), // Scaled AC voltage
+        ams_helper.scaleACTSVoltageToVCU(ams.raw_tc_voltage), // Scaled TC voltage
+        ams_helper.scaleHallSensorToVCU(ams.coulomb_count), // Scaled Hall sensor value
+        ams_helper.scaleMaxMinVoltageToVCU(ams.voltage_max), // Scaled maximum voltage
+        ams_helper.scaleMaxMinVoltageToVCU(ams.voltage_min), // Scaled minimum voltage
+        ams_helper.scaleMaxMinTemperatureToVCU(ams.temperature_max), // Scaled maximum temperature
+        ams_helper.scaleMaxMinTemperatureToVCU(ams.temperature_min)  // Scaled minimum temperature
+    };
+
+    can_external.sendMessage(&send_vcu_frame); // Send the CAN frame to the slave
+}
+
+void CanExternalHelper::sendChargerData()
 {
     // Create a CAN frame to send the host data to the slaves
     if (ams.fault_flags)
@@ -52,7 +65,7 @@ void CanExternalHelper::sendHostData()
     }
 
     can_frame send_battery_frame = {
-        CAN_EXTERNAL_BATTERY_STAT_ADDRESS, // CAN ID for the battery status
+        CAN_EXTERNAL_CHARGER_BATTERY_STAT_ADDRESS, // CAN ID for the battery status
         5,                              // Data length code (DLC)
         ams.battery_soc,                // Battery SOC
         ams.voltage_min & 0xFF,          // Minimum voltage (low byte)
@@ -64,7 +77,7 @@ void CanExternalHelper::sendHostData()
     can_external.sendMessage(&send_battery_frame); // Send the CAN frame to the slave
 
     can_frame send_temperature_frame = {
-        CAN_EXTERNAL_TEMPERATURE_STAT_ADDRESS, // CAN ID for the temperature status
+        CAN_EXTERNAL_CHARGER_TEMPERATURE_STAT_ADDRESS, // CAN ID for the temperature status
         4,                              // Data length code (DLC)
         ams.temperature_min & 0xFF,      // Minimum temperature (low byte)
         (ams.temperature_min >> 8) & 0xFF, // Minimum temperature (high byte)
@@ -97,16 +110,13 @@ void CanExternalHelper::sendState()
 
 void CanExternalHelper::sendDebug()
 {
-    // raw ADC
-    uint16_t raw_ac_iso = analogRead(PIN_AC_ISO);
-    uint16_t raw_tc_iso = analogRead(PIN_TC_ISO);
     can_frame send_debug_frame = {
         CAN_EXTERNAL_DEBUG_ADDRESS,                 // CAN ID
         7,                                          // Data length code (DLC)
-        raw_ac_iso & 0xFF,
-        (raw_ac_iso >> 8) & 0xFF,
-        raw_tc_iso & 0xFF,
-        (raw_tc_iso >> 8) & 0xFF,
+        ams.raw_ac_voltage & 0xFF,
+        (ams.raw_ac_voltage >> 8) & 0xFF,
+        ams.raw_tc_voltage & 0xFF,
+        (ams.raw_tc_voltage >> 8) & 0xFF,
         ams.fault_flags,
         static_cast<uint8_t>(digitalRead(PIN_SDC) == SDC_CLOSED),
         static_cast<uint8_t>(ams.air_state)

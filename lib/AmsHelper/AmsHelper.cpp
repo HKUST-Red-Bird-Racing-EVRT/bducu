@@ -39,7 +39,7 @@ void AmsHelper::updateMaxMinCellVoltages()
 
 void AmsHelper::updateMaxMinTemperatures()
 {
-    uint16_t temperature_min = UINT16_MAX;
+    uint16_t temperature_min = UINT16_MAX; // Should be 0?
     uint16_t temperature_max = 0;
     for (uint8_t slave_index = 0; slave_index < NUM_SLAVE; ++slave_index)
     {
@@ -119,7 +119,7 @@ void AmsHelper::updateAIR()
     case AIRState::INIT:
     {
         // powered on = SDC closed, and no fault active
-        if (analogRead(PIN_AC_ISO) < AC_MIN_START_VOLTAGE_THRESHOLD)
+        if (ams.raw_ac_voltage < AC_MIN_START_VOLTAGE_THRESHOLD)
         {
             ams.fault_flags |= UNDERVOLTAGE_FAULT_BIT;
             digitalWrite(PIN_AMS_ERR, HIGH); // Set AMS_ERR pin high if any fault is active
@@ -136,10 +136,7 @@ void AmsHelper::updateAIR()
     case AIRState::PRECHARGE:
     {
         // Handle PRECHARGE state
-        uint16_t voltage_ac_iso = analogRead(PIN_AC_ISO);
-        uint16_t voltage_tc_iso = analogRead(PIN_TC_ISO);
-
-        if (voltage_ac_iso > SHUTDOWN_VOLTAGE_THRESHOLD && voltage_tc_iso >= voltage_ac_iso * TS_AC_RATIO)
+        if (ams.raw_ac_voltage > SHUTDOWN_VOLTAGE_THRESHOLD && ams.raw_tc_voltage >= ams.raw_ac_voltage * TS_AC_RATIO)
         {
             setAIR(AIRState::ACTIVE);
         }
@@ -163,9 +160,7 @@ void AmsHelper::updateAIR()
     case AIRState::DISCHARGE:
     {
         // Handle DISCHARGE state
-        uint16_t voltage_tc_iso = analogRead(PIN_TC_ISO);
-
-        if (voltage_tc_iso < SHUTDOWN_VOLTAGE_THRESHOLD)
+        if (ams.raw_tc_voltage < SHUTDOWN_VOLTAGE_THRESHOLD)
         {
             setAIR(AIRState::INIT);
         }
@@ -173,4 +168,62 @@ void AmsHelper::updateAIR()
         break;
     }
     }
+}
+
+constexpr uint8_t AmsHelper::scaleSOCToVCU(uint8_t soc)
+{   // SOC in percentage (0-100)
+    /*
+    constexpr uint8_t soc_100 = 227;
+    constexpr uint8_t soc_0 = 27;
+    constexpr uint8_t epsilon = 2;
+    return static_cast<uint8_t>(soc + soc_0 * epsilon);
+    */
+    return LinearInterp<uint8_t, uint8_t, uint16_t, 2>(SOC_TO_VCU_TABLE).interp(soc);
+}
+
+constexpr uint8_t AmsHelper::scaleACTSVoltageToVCU(uint16_t value)
+{
+    // Analog Read
+    /*
+    constexpr uint16_t max_voltage = 600; // 600V
+    constexpr uint8_t min_voltage = 90; // 90V
+    constexpr uint16_t max_analog_read = (double)max_voltage / VOLTAGE_DIVSOR / VCC * ADC_RESOLUTION; // Maximum analog read value: 966
+    constexpr uint16_t min_analog_read = (double)min_voltage / VOLTAGE_DIVSOR / VCC * ADC_RESOLUTION; // Minimum analog read value: 144
+    constexpr uint8_t epsilon = 2;
+    return static_cast<uint8_t> (value - min_analog_read) / epsilon;
+    */
+    return LinearInterp<uint16_t, uint8_t, uint16_t, 2>(ACTS_VOLTAGE_TO_VCU_TABLE).interp(value);
+}
+
+constexpr int8_t AmsHelper::scaleHallSensorToVCU(int8_t coloumb_count)
+{
+    // Hall Sensor
+    /*
+    constexpr int8_t max_count = 127;
+    constexpr int8_t min_count = -128;
+    constexpr uint8_t epsilon = 1;
+    return static_cast<int8_t> (coloumb_count - min_count) / epsilon;
+    */
+    return LinearInterp<int8_t, int8_t, int16_t, 2>(HALL_SENSOR_TO_VCU_TABLE).interp(coloumb_count);
+}
+
+constexpr uint8_t AmsHelper::scaleMaxMinVoltageToVCU(uint16_t value)
+{
+    // Actual Voltage in mV
+    /*
+    constexpr uint16_t max_voltage = 4300;
+    constexpr uint8_t min_voltage = 3500;
+    constexpr double epsilon = 25/8;
+    return static_cast<uint8_t> (value - min_voltage) / epsilon;
+    */
+    return LinearInterp<uint16_t, uint8_t, uint16_t, 2>(MAX_MIN_VOLTAGE_TO_VCU_TABLE).interp(value);
+}
+
+constexpr uint8_t AmsHelper::scaleMaxMinTemperatureToVCU(uint16_t value)
+{
+    // Analog Read
+    constexpr uint8_t max_temperature = 100;
+    constexpr uint8_t min_temperature = 0;
+    constexpr uint8_t epsilon = 1;
+    return static_cast<uint8_t> (value - min_temperature) / epsilon;
 }

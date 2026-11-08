@@ -71,7 +71,7 @@ void setup()
   can_external_helper.sendDebug(); // Send initial debug information to the host (VCU or CHARGER)
 
   ams_helper.setAIR(AIRState::INIT); // Set initial AIR state to PRECHARGE
-  can_external_helper.setHost();     // Determine if the host is VCU or CHARGER
+  can_external_helper.waitHost();     // Determine if the host is VCU or CHARGER
   
 }
 
@@ -87,6 +87,9 @@ void loop()
   - If timeout, set fault flag and fault slave
   - If no timeout, communicate with vcu
   */
+
+  ams.raw_ac_voltage = analogRead(PIN_AC_ISO); // Read raw AC voltage
+  ams.raw_tc_voltage = analogRead(PIN_TC_ISO); // Read raw TC voltage
 
   can_external_helper.sendState(); // Send the current state to the host (VCU or CHARGER)
   can_external_helper.sendDebug(); // Send debug information to the host (VCU or CHARGER)
@@ -129,9 +132,15 @@ void loop()
   ams_helper.updateMaxMinTemperatures();
   ams_helper.updateBatterySOC(analogRead(PIN_HALL_LO), analogRead(PIN_HALL_HI));
   */
-  if (millis() - ams.timestamp >= 1000) // Send data to VCU every 1 second
+
+  if (!ams.host_vcu) // If the host is a charger, send charger data
   {
-    can_external_helper.sendHostData();
+    can_external_helper.sendChargerData();
+  }
+
+  else if (millis() - ams.timestamp >= 1000) // Send data to VCU every 1 second
+  {
+    can_external_helper.sendVCUData();
     ams.timestamp = millis(); // Update the timestamp after sending data
   }
 }

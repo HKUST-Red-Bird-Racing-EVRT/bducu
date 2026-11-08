@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define NUM_SLAVE 1
+#define NUM_SLAVE 10
 #define NUM_VCELL 14
 #define NUM_NTC 5
 
@@ -34,6 +34,8 @@ struct AmsState
     uint16_t temperature_min; 
     uint16_t temperature_max;
     uint16_t cellbal_states[NUM_SLAVE];
+    uint16_t raw_ac_voltage; // Raw AC voltage reading
+    uint16_t raw_tc_voltage; // Raw TC voltage reading
     uint8_t fault_slave;
     uint8_t fault_flags;
     uint8_t command_flags[NUM_SLAVE];

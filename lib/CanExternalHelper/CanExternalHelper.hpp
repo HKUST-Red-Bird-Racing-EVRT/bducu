@@ -21,8 +21,9 @@ Determine Host Address (Determine host is VCU/CHARGER): 0x500
 */
 
 #define CAN_EXTERNAL_PANIC_ADDRESS 0x100
-#define CAN_EXTERNAL_BATTERY_STAT_ADDRESS 0x400
-#define CAN_EXTERNAL_TEMPERATURE_STAT_ADDRESS 0x410
+#define CAN_EXTERNAL_VCU_ADDRESS 0x300
+#define CAN_EXTERNAL_CHARGER_BATTERY_STAT_ADDRESS 0x400
+#define CAN_EXTERNAL_CHARGER_TEMPERATURE_STAT_ADDRESS 0x410
 #define CAN_EXTERNAL_DETERMINE_HOST_ADDRESS 0x500
 #define CAN_EXTERNAL_WAITING_TS_ACT_ADDRESS 0x690
 #define CAN_EXTERNAL_STATE_ADDRESS 0x691
@@ -35,8 +36,9 @@ class CanExternalHelper
 public:
     CanExternalHelper(MCP2515 &can_external_, AmsState &ams_, AmsHelper &ams_helper_);
     CanExternalHelper() = delete; // Delete the default constructor to prevent its use
-    void setHost();
-    void sendHostData();
+    void waitHost();
+    void sendVCUData();
+    void sendChargerData();
     void sendWaitingTsAct();
     void sendState();
     void sendDebug();
