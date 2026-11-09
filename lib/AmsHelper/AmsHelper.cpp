@@ -73,33 +73,33 @@ void AmsHelper::setAIR(AIRState new_state)
     {
     case AIRState::INIT:
         // Handle INIT state
-        digitalWrite(PIN_AIR_NEG, LOW);
-        digitalWrite(PIN_AIR_POS, LOW);
-        digitalWrite(PIN_AIR_PRE, LOW);
+        digitalWrite(PIN_AIR_NEG, HIGH);
+        digitalWrite(PIN_AIR_POS, HIGH);
+        digitalWrite(PIN_AIR_PRE, HIGH);
         break;
 
     case AIRState::PRECHARGE:
         // Handle PRECHARGE state
         precharge_start = millis();
-        digitalWrite(PIN_AIR_NEG, HIGH);
-        digitalWrite(PIN_AIR_POS, LOW);
-        digitalWrite(PIN_AIR_PRE, HIGH);
+        digitalWrite(PIN_AIR_NEG, LOW);
+        digitalWrite(PIN_AIR_POS, HIGH);
+        digitalWrite(PIN_AIR_PRE, LOW);
         break;
 
     case AIRState::ACTIVE:
         // Handle ACTIVE state
         // Delay 100 after INIT, Voltage > 50% (Threshold)
-        digitalWrite(PIN_AIR_NEG, HIGH);
-        digitalWrite(PIN_AIR_POS, HIGH);
-        digitalWrite(PIN_AIR_PRE, LOW);
+        digitalWrite(PIN_AIR_NEG, LOW);
+        digitalWrite(PIN_AIR_POS, LOW);
+        digitalWrite(PIN_AIR_PRE, HIGH);
         break;
 
     case AIRState::DISCHARGE:
         // Handle DISCHARGE state
         // Discharge itself is hardware (K5 shorts MCU+ to MCU-)
-        digitalWrite(PIN_AIR_NEG, LOW);
-        digitalWrite(PIN_AIR_POS, LOW);
-        digitalWrite(PIN_AIR_PRE, LOW);
+        digitalWrite(PIN_AIR_NEG, HIGH);
+        digitalWrite(PIN_AIR_POS, HIGH);
+        digitalWrite(PIN_AIR_PRE, HIGH);
         break;
     }
 }
@@ -159,12 +159,6 @@ void AmsHelper::updateAIR()
 
     case AIRState::DISCHARGE:
     {
-        // Handle DISCHARGE state
-        if (ams.raw_tc_voltage < SHUTDOWN_VOLTAGE_THRESHOLD)
-        {
-            setAIR(AIRState::INIT);
-        }
-
         break;
     }
     }

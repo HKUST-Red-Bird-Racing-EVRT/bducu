@@ -13,7 +13,7 @@ void CanExternalHelper::waitHost()
     {
         // Process the response from the slave
         // For example, you can check the data in read_frame.data to determine if the host is VCU or CHARGER
-        ams.host_vcu = (read_frame.data[0] == 0x01);     // Expected: 0x01 for VCU, 0x00 for CHARGER
+        ams.host_vcu = (read_frame.data[0]);     // Expected: 0x01 for VCU, 0x00 for CHARGER
     }
 }
 

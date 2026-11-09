@@ -33,22 +33,6 @@ void setup()
 
   can_internal.reset();
   can_internal.setBitrate(CAN_500KBPS, MCP_20MHZ);
-  can_internal.setConfigMode();
-
-  // BUFFER 0 Setup: Covers 0x100 to 0x200
-  // MASK0 = 0x700 (Checks top 3 bits: 0b111 0000 0000)
-  can_internal.setFilterMask(MCP2515::MASK0, false, 0x700);
-
-  // RXF0: Accepts 0x100 to 0x1FF (Top 3 bits match 0b001)
-  can_internal.setFilter(MCP2515::RXF0, false, 0x100);
-
-  // BUFFER 1 Setup: Covers 0x300 to 0x400
-  // MASK1 = 0x700 (Checks top 3 bits: 0b111 0000 0000)
-  can_internal.setFilterMask(MCP2515::MASK1, false, 0x700);
-
-  // RXF2: Accepts 0x300 to 0x3FF (Top 3 bits match 0b011)
-  can_internal.setFilter(MCP2515::RXF2, false, 0x300);
-
   can_internal.setNormalMode();
 
   can_external.reset();
@@ -63,11 +47,12 @@ void setup()
   pinMode(PIN_AMS_ERR, OUTPUT);
   pinMode(PIN_SDC, INPUT);
 
-  digitalWrite(PIN_AMS_ERR, LOW); // Set AMS_ERR pin low initially
+  digitalWrite(PIN_AMS_ERR, HIGH); // Set AMS_ERR pin low initially
   can_external_helper.sendDebug(); // Send initial debug information to the host (VCU or CHARGER)
 
   ams_helper.setAIR(AIRState::INIT); // Set initial AIR state to PRECHARGE
   can_external_helper.waitHost();     // Determine if the host is VCU or CHARGER
+  ams_helper.setAIR(AIRState::PRECHARGE); // Set initial AIR state to PRECHARGE
   
 }
 
