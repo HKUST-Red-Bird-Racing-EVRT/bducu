@@ -55,12 +55,8 @@ void setup()
   can_external.setBitrate(CAN_500KBPS, MCP_20MHZ);
   can_external.setNormalMode();
 
-  pinMode(PIN_CAN0_CS, OUTPUT);
-  pinMode(PIN_CAN1_CS, OUTPUT);
-  pinMode(PIN_INT_0, INPUT);
-  pinMode(PIN_INT_1, INPUT);
-  pinMode(PIN_HALL_LO, INPUT);
   pinMode(PIN_HALL_HI, INPUT);
+  pinMode(PIN_HALL_LO, INPUT);
   pinMode(PIN_AIR_NEG, OUTPUT);
   pinMode(PIN_AIR_POS, OUTPUT);
   pinMode(PIN_AIR_PRE, OUTPUT);

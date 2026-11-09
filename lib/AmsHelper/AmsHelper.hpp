@@ -23,8 +23,8 @@ constexpr TablePoint<uint8_t, uint8_t> SOC_TO_VCU_TABLE[2] =
 
 constexpr TablePoint<uint16_t, uint8_t> ACTS_VOLTAGE_TO_VCU_TABLE[2] = 
 {
-    {90 / VOLTAGE_DIVSOR / VCC * ADC_RESOLUTION, 0},    // Minimum Analog Read Value: 144
-    {600 / VOLTAGE_DIVSOR / VCC * ADC_RESOLUTION, 255}  // Maximum Analog Read Value: 966
+    {(uint16_t)(90 / VOLTAGE_DIVSOR / VCC * ADC_RESOLUTION), 0},    // Minimum Analog Read Value: 144
+    {(uint16_t)(600 / VOLTAGE_DIVSOR / VCC * ADC_RESOLUTION), 255}  // Maximum Analog Read Value: 966
 };
 
 constexpr TablePoint<int8_t, int8_t> HALL_SENSOR_TO_VCU_TABLE[2] = 
@@ -36,7 +36,7 @@ constexpr TablePoint<int8_t, int8_t> HALL_SENSOR_TO_VCU_TABLE[2] =
 constexpr TablePoint<uint16_t, uint8_t> MAX_MIN_VOLTAGE_TO_VCU_TABLE[2] = 
 {
     {3500, 0},
-    {4300, 256}
+    {4300, 255}
 };
 
 constexpr TablePoint<uint16_t, uint8_t> MAX_MIN_TEMPERATURE_TO_VCU_TABLE[5] = 
@@ -69,5 +69,7 @@ private:
     AmsState &ams;
     uint32_t precharge_start = 0; // millis() when PRECHARGE was entered
 };
+
+#include "AmsHelper.ipp" // Include the implementation of constexpr methods
 
 #endif // AMSHELPER_HPP
