@@ -28,6 +28,7 @@ void CanExternal::waitHost()
     {
         if (millis() - start_time > DEBUG_INTERVAL)
         {
+            ams_state.sdc_active = digitalRead(PIN_SDC) == SDC_CLOSED;
             sendDebug(); // Send debug information to the host (VCU or CHARGER)
         }
     }
