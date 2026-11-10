@@ -44,6 +44,8 @@ Determine Host Address (Determine host is VCU/CHARGER): 0x500
 
 #define CAN_HOST_TIMEOUT 500 // ms
 
+constexpr uint32_t DEBUG_INTERVAL = 100; // ms
+
 class CanExternal
 {
 public:

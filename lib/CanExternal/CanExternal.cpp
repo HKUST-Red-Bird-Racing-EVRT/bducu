@@ -22,12 +22,18 @@ void CanExternal::waitHost()
 {
     can_frame read_frame;
 
+    uint32_t start_time = millis();
+
     while (!(can_external.readMessage(&read_frame) == MCP2515::ERROR_OK && read_frame.can_id == CAN_EXTERNAL_DETERMINE_HOST_ADDRESS))
     {
-        // Process the response from the slave
-        // For example, you can check the data in read_frame.data to determine if the host is VCU or CHARGER
-        ams_state.host_vcu = (read_frame.data[0]);     // Expected: 0x01 for VCU, 0x00 for CHARGER
+        if (millis() - start_time > DEBUG_INTERVAL)
+        {
+            sendDebug(); // Send debug information to the host (VCU or CHARGER)
+        }
     }
+    // Process the response from the slave
+    // For example, you can check the data in read_frame.data to determine if the host is VCU or CHARGER
+    ams_state.host_vcu = (read_frame.data[0]);     // Expected: 0x01 for VCU, 0x00 for CHARGER
 }
 
 void CanExternal::sendVCUData()
