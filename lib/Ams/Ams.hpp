@@ -1,5 +1,17 @@
-#ifndef AMSHELPER_HPP
-#define AMSHELPER_HPP
+/**
+ * @file Ams.hpp
+ * @author Oscar (oscarckh0818@gmail.com),
+ *         Planeson (carson.cpk@proton.me)
+ * @brief Declaration of the AMS (Accumulator Management System) class and related constants.
+ * @version 0.2
+ * @date 2026-11-10
+ * 
+ * @copyright Copyright (c) 2026 Red Bird Racing
+ * 
+ */
+
+#ifndef AMS_HPP
+#define AMS_HPP
 
 #include "AmsState.hpp"
 #include "BoardConfig.h"
@@ -48,11 +60,11 @@ constexpr TablePoint<uint16_t, uint8_t> MAX_MIN_TEMPERATURE_TO_VCU_TABLE[5] =
     {100, 4}
 };
 
-class AmsHelper
+class Ams
 {
 public:
-    AmsHelper(AmsState &ams_);
-    AmsHelper() = delete; // Delete the default constructor to prevent its use
+    explicit Ams(AmsState &ams_state_);
+    Ams() = delete; // Delete the default constructor to prevent its use
     void resetCellBal();
     void updateMaxMinCellVoltages();
     void updateMaxMinTemperatures();
@@ -66,10 +78,10 @@ public:
     constexpr uint8_t scaleMaxMinTemperatureToVCU(uint16_t value);
 
 private:
-    AmsState &ams;
+    AmsState &ams_state;
     uint32_t precharge_start = 0; // millis() when PRECHARGE was entered
 };
 
-#include "AmsHelper.ipp" // Include the implementation of constexpr methods
+#include "Ams.ipp" // Include the implementation of constexpr methods
 
-#endif // AMSHELPER_HPP
+#endif // AMS_HPP

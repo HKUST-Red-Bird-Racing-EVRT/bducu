@@ -1,3 +1,16 @@
+/**
+ * @file BoardConfig.h
+ * @author Oscar (oscarckh0818@gmail.com),
+ *         Chiho (nganchihon@gmail.com),
+ *         Planeson (carson.cpk@proton.me)
+ * @brief Configuration constants for the Board.
+ * @version 1.0
+ * @date 2026-11-10
+ * 
+ * @copyright Copyright (c) 2026 Red Bird Racing
+ * 
+ */
+
 #ifndef BOARDCONFIG_H
 #define BOARDCONFIG_H
 

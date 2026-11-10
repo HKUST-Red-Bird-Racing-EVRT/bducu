@@ -1,8 +1,21 @@
-#ifndef CAN_EXTERNAL_HELPER_HPP
-#define CAN_EXTERNAL_HELPER_HPP
+/**
+ * @file CanExternal.hpp
+ * @author Oscar (oscarckh0818@gmail.com),
+ *         Chiho (nganchihon@gmail.com),
+ *         Planeson (carson.cpk@proton.me)
+ * @brief Declaration of the CanExternal class for handling external CAN communication.
+ * @version 0.1
+ * @date 2026-11-10
+ * 
+ * @copyright Copyright (c) 2026 Red Bird Racing
+ * 
+ */
+
+#ifndef CAN_EXTERNAL_HPP
+#define CAN_EXTERNAL_HPP
 
 #include "AmsState.hpp"
-#include "AmsHelper.hpp"
+#include "Ams.hpp"
 #include "BoardConfig.h"
 
 // ignore -Wpedantic warnings for mcp2515.h
@@ -31,11 +44,11 @@ Determine Host Address (Determine host is VCU/CHARGER): 0x500
 
 #define CAN_HOST_TIMEOUT 500 // ms
 
-class CanExternalHelper
+class CanExternal
 {
 public:
-    CanExternalHelper(MCP2515 &can_external_, AmsState &ams_, AmsHelper &ams_helper_);
-    CanExternalHelper() = delete; // Delete the default constructor to prevent its use
+    CanExternal(MCP2515 &can_external_, AmsState &ams_state_, Ams &ams_);
+    CanExternal() = delete; // Delete the default constructor to prevent its use
     void waitHost();
     void sendVCUData();
     void sendChargerData();
@@ -45,8 +58,8 @@ public:
 
 private:
     MCP2515 &can_external;
-    AmsState &ams;
-    AmsHelper &ams_helper;
+    AmsState &ams_state;
+    Ams &ams;
 };
 
-#endif // CAN_EXTERNAL_HELPER_HPP
+#endif // CAN_EXTERNAL_HPP

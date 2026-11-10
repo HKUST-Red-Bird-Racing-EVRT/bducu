@@ -1,6 +1,14 @@
 /**
  * @file main.cpp
- * @brief Main entry point for the AMS Master Controller
+ * @author Oscar (oscarckh0818@gmail.com),
+ *         Chiho (nganchihon@gmail.com),
+ *         Planeson (carson.cpk@proton.me)
+ * @brief Main entry point for the Battery Disconnect Unit Control Unit (BDUCU) firmware.
+ * @version 0.2
+ * @date 2026-11-10
+ * 
+ * @copyright Copyright (c) 2026 Red Bird Racing
+ * 
  */
 
 #include <Arduino.h>
@@ -13,19 +21,19 @@
 
 #include "BoardConfig.h"
 #include "AmsState.hpp"
-#include "AmsHelper.hpp"
-#include "CanInternalHelper.hpp"
-#include "CanExternalHelper.hpp"
+#include "Ams.hpp"
+#include "CanInternal.hpp"
+#include "CanExternal.hpp"
 
 MCP2515 can_internal(PIN_CAN1_CS);
 MCP2515 can_external(PIN_CAN0_CS);
 can_frame rx_slave_frame;
 can_frame tx_temp_frame;
 
-AmsState ams;
-AmsHelper ams_helper(ams);
-CanInternalHelper can_internal_helper(can_internal, ams, ams_helper);
-CanExternalHelper can_external_helper(can_external, ams, ams_helper);
+AmsState ams_state;
+Ams ams(ams_state);
+CanInternal can_internal_helper(can_internal, ams_state, ams);
+CanExternal can_external_helper(can_external, ams_state, ams);
 
 void setup()
 {
@@ -47,12 +55,12 @@ void setup()
   pinMode(PIN_AMS_ERR, OUTPUT);
   pinMode(PIN_SDC, INPUT);
 
-  digitalWrite(PIN_AMS_ERR, HIGH); // Set AMS_ERR pin low initially
+  digitalWrite(PIN_AMS_ERR, HIGH); // Active LOW, set AMS_ERR pin HIGH initially
   can_external_helper.sendDebug(); // Send initial debug information to the host (VCU or CHARGER)
 
-  ams_helper.setAIR(AIRState::INIT); // Set initial AIR state to PRECHARGE
+  ams.setAIR(AIRState::INIT); // Set initial AIR state to PRECHARGE
   can_external_helper.waitHost();     // Determine if the host is VCU or CHARGER
-  ams_helper.setAIR(AIRState::PRECHARGE); // Set initial AIR state to PRECHARGE
+  ams.setAIR(AIRState::PRECHARGE); // Set initial AIR state to PRECHARGE
   
 }
 
@@ -69,13 +77,13 @@ void loop()
   - If no timeout, communicate with vcu
   */
 
-  ams.raw_ac_voltage = analogRead(PIN_AC_ISO); // Read raw AC voltage
-  ams.raw_tc_voltage = analogRead(PIN_TC_ISO); // Read raw TC voltage
+  ams_state.raw_ac_voltage = analogRead(PIN_AC_ISO); // Read raw AC voltage
+  ams_state.raw_tc_voltage = analogRead(PIN_TC_ISO); // Read raw TC voltage
 
   can_external_helper.sendState(); // Send the current state to the host (VCU or CHARGER)
   can_external_helper.sendDebug(); // Send debug information to the host (VCU or CHARGER)
 
-  ams_helper.updateAIR(); // Update the AIR state based on conditions
+  ams.updateAIR(); // Update the AIR state based on conditions
 
   /*
   for (uint8_t frame_index = 0; frame_index < NUM_SLAVE_FRAME; ++frame_index)
@@ -114,14 +122,14 @@ void loop()
   ams_helper.updateBatterySOC(analogRead(PIN_HALL_LO), analogRead(PIN_HALL_HI));
   */
 
-  if (!ams.host_vcu) // If the host is a charger, send charger data
+  if (!ams_state.host_vcu) // If the host is a charger, send charger data
   {
     can_external_helper.sendChargerData();
   }
 
-  else if (millis() - ams.timestamp >= 1000) // Send data to VCU every 1 second
+  else if (millis() - ams_state.timestamp >= 1000) // Send data to VCU every 1 second
   {
     can_external_helper.sendVCUData();
-    ams.timestamp = millis(); // Update the timestamp after sending data
+    ams_state.timestamp = millis(); // Update the timestamp after sending data
   }
 }
