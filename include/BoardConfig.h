@@ -39,9 +39,9 @@
 #define PIN_TC_ISO PIN_PC1
 
 // Constant Definitions
-#define SHUTDOWN_VOLTAGE_THRESHOLD 90
+#define SHUTDOWN_VOLTAGE_THRESHOLD 90 // Change back to 90
 #define TS_AC_RATIO 19/20
-#define PRECHARGE_TIMEOUT 500 // ms
+#define PRECHARGE_TIMEOUT 500 // change back to 500ms
 #define VOLTAGE_UV 3500 // Undervoltage threshold in mV
 #define AIR_STATE_PERIOD 100
 
