@@ -1,8 +1,20 @@
-#ifndef CAN_INTERNAL_HELPER_HPP
-#define CAN_INTERNAL_HELPER_HPP
+/**
+ * @file CanInternal.hpp
+ * @author Oscar (oscarckh0818@gmail.com),
+ *         Planeson (carson.cpk@proton.me)
+ * @brief Declaration of the CanInternal class for handling internal CAN communication.
+ * @version 0.2
+ * @date 2026-11-10
+ * 
+ * @copyright Copyright (c) 2026 Red Bird Racing
+ * 
+ */
+
+#ifndef CAN_INTERNAL_HPP
+#define CAN_INTERNAL_HPP
 
 #include "AmsState.hpp"
-#include "AmsHelper.hpp"
+#include "Ams.hpp"
 #include "BoardConfig.h"
 
 #include <stdint.h>
@@ -39,11 +51,11 @@ frame 0: 0x30x, frame 1: 0x31x, frame 2: 0x32x, ..., frame 5: 0x35x
 
 #define CAN_TIMEOUT_MAX 500
 
-class CanInternalHelper
+class CanInternal
 {
 public:
-    CanInternalHelper(MCP2515 &can_internal_, AmsState &ams_, AmsHelper &ams_helper_);
-    CanInternalHelper() = delete; // Delete the default constructor to prevent its use
+    CanInternal(MCP2515 &can_internal_, AmsState &ams_state_, Ams &ams_);
+    CanInternal() = delete; // Delete the default constructor to prevent its use
     void packingMaskCellBalState(uint16_t &flag);
     void requestSlaveData(uint8_t frame_index);
     void drainCanBuffer();
@@ -55,8 +67,8 @@ public:
 
 private:
     MCP2515 &can_internal;
-    AmsState &ams;
-    AmsHelper &ams_helper;
+    AmsState &ams_state;
+    Ams &ams;
 };
 
 //  Master Command Byte bits
@@ -65,4 +77,4 @@ private:
 #define MASTERCMD_CELLBAL_ODD_BIT 0x04
 #define MASTERCMD_SEQTOGGLE_BIT 0x08
 
-#endif // CAN_INTERNAL_HELPER_HPP
+#endif // CAN_INTERNAL_HPP

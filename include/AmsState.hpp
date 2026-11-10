@@ -1,3 +1,14 @@
+/**
+ * @file AmsState.hpp
+ * @author Oscar (oscarckh0818@gmail.com)
+ * @brief Structure for the AMS (Accumulator Management System) state.
+ * @version 0.2
+ * @date 2026-11-10
+ * 
+ * @copyright Copyright (c) 2026 Red Bird Racing
+ * 
+ */
+
 #ifndef AMSSTATE_HPP
 #define AMSSTATE_HPP
 

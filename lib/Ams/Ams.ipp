@@ -1,17 +1,17 @@
 /**
- * @file AmsHelper.ipp
+ * @file Ams.ipp
  * @author Planeson (carson.cpk@proton.me)
- * @brief Implementation of AmsHelper constexpr methods
+ * @brief Implementation of Ams constexpr methods
  * @version 1.0
  * @date 2026-11-09
  * 
- * @copyright Copyright (c) 2026
+ * @copyright Copyright (c) 2026 Red Bird Racing
  * 
  */
 
-#include "AmsHelper.hpp"
+#include "Ams.hpp"
 
-constexpr uint8_t AmsHelper::scaleSOCToVCU(uint8_t soc)
+constexpr uint8_t Ams::scaleSOCToVCU(uint8_t soc)
 {   // SOC in percentage (0-100)
     /*
     constexpr uint8_t soc_100 = 227;
@@ -22,7 +22,7 @@ constexpr uint8_t AmsHelper::scaleSOCToVCU(uint8_t soc)
     return LinearInterp<uint8_t, uint8_t, uint16_t, 2>(SOC_TO_VCU_TABLE).interp(soc);
 }
 
-constexpr uint8_t AmsHelper::scaleACTSVoltageToVCU(uint16_t value)
+constexpr uint8_t Ams::scaleACTSVoltageToVCU(uint16_t value)
 {
     // Analog Read
     /*
@@ -36,7 +36,7 @@ constexpr uint8_t AmsHelper::scaleACTSVoltageToVCU(uint16_t value)
     return LinearInterp<uint16_t, uint8_t, uint16_t, 2>(ACTS_VOLTAGE_TO_VCU_TABLE).interp(value);
 }
 
-constexpr int8_t AmsHelper::scaleHallSensorToVCU(int8_t coloumb_count)
+constexpr int8_t Ams::scaleHallSensorToVCU(int8_t coloumb_count)
 {
     // Hall Sensor
     /*
@@ -48,7 +48,7 @@ constexpr int8_t AmsHelper::scaleHallSensorToVCU(int8_t coloumb_count)
     return LinearInterp<int8_t, int8_t, int16_t, 2>(HALL_SENSOR_TO_VCU_TABLE).interp(coloumb_count);
 }
 
-constexpr uint8_t AmsHelper::scaleMaxMinVoltageToVCU(uint16_t value)
+constexpr uint8_t Ams::scaleMaxMinVoltageToVCU(uint16_t value)
 {
     // Actual Voltage in mV
     /*
@@ -60,7 +60,7 @@ constexpr uint8_t AmsHelper::scaleMaxMinVoltageToVCU(uint16_t value)
     return LinearInterp<uint16_t, uint8_t, uint16_t, 2>(MAX_MIN_VOLTAGE_TO_VCU_TABLE).interp(value);
 }
 
-constexpr uint8_t AmsHelper::scaleMaxMinTemperatureToVCU(uint16_t value)
+constexpr uint8_t Ams::scaleMaxMinTemperatureToVCU(uint16_t value)
 {
     // Analog Read
     constexpr uint8_t max_temperature = 100;
