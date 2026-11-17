@@ -127,9 +127,15 @@ void loop()
     can_external_helper.sendChargerData();
   }
 
-  else if (millis() - ams_state.timestamp >= 1000) // Send data to VCU every 1 second
+  else if (millis() - ams_state.ams_data_timestamp >= 100)
   {
-    can_external_helper.sendVCUData();
-    ams_state.timestamp = millis(); // Update the timestamp after sending data
+    can_external_helper.sendVCUAMSData();
+    ams_state.ams_data_timestamp = millis(); // Update the timestamp after sending data
+  }
+
+  else if (millis() - ams_state.bducu_timestamp >= 10)
+  {
+    can_external_helper.sendVCUBDUCUData();
+    ams_state.bducu_timestamp = millis(); // Update the timestamp after sending data
   }
 }

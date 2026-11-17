@@ -37,7 +37,37 @@ void CanExternal::waitHost()
     ams_state.host_vcu = (read_frame.data[0]);     // Expected: 0x01 for VCU, 0x00 for CHARGER
 }
 
-void CanExternal::sendVCUData()
+void CanExternal::sendVCUBDUCUData()
+{
+    // Create a CAN frame to send the host data to the slaves
+    if (ams_state.fault_flags)
+    {
+        // If SDC fault is active, send a panic message to the slaves
+        can_frame send_panic_frame = {
+            CAN_EXTERNAL_PANIC_ADDRESS, // CAN ID for the panic message
+            1,                          // Data length code (DLC)
+            ams_state.fault_flags             // Panic data (can be customized as needed)
+        };
+
+        can_external.sendMessage(&send_panic_frame); // Send the CAN frame to the slave
+    }
+
+    uint8_t ams_state_byte = ams_state.fault_flags << 2;
+    ams_state_byte |= static_cast<uint8_t>(ams_state.air_state) & 0x03; // Combine fault flags and AIR state into a single byte
+    
+    can_frame send_vcu_frame = {
+        CAN_EXTERNAL_VCU_BDUCU_ADDRESS, // CAN ID for the VCU data
+        4,                        // Data length code (DLC)
+        ams_state_byte,                     // Placeholder data (can be customized as needed)
+        // imbalance_index (max voltage - min voltage)
+        ams.scaleMaxMinVoltageToVCU(ams_state.voltage_min), // Scaled minimum voltage
+        ams.scaleMaxMinTemperatureToVCU(ams_state.temperature_max), // Scaled maximum temperature
+    };
+
+    can_external.sendMessage(&send_vcu_frame); // Send the CAN frame to the slave
+}
+
+void CanExternal::sendVCUAMSData()
 {
     // Create a CAN frame to send the host data to the slaves
     if (ams_state.fault_flags)
@@ -53,7 +83,7 @@ void CanExternal::sendVCUData()
     }
     
     can_frame send_vcu_frame = {
-        CAN_EXTERNAL_VCU_ADDRESS, // CAN ID for the VCU data
+        CAN_EXTERNAL_VCU_AMS_DATA_ADDRESS, // CAN ID for the VCU data
         8,                        // Data length code (DLC)
         ams.scaleSOCToVCU(ams_state.battery_soc), // Scaled SOC
         ams.scaleACTSVoltageToVCU(ams_state.raw_ac_voltage), // Scaled AC voltage

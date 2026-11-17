@@ -35,7 +35,8 @@ struct AmsState
     bool sdc_active = true;          // SDC TRUE/FALSE
     bool host_vcu;                  // Host VCU/CHARGER
     AIRState air_state = AIRState::INIT; // AIR State (INIT, ACTIVE, SHUTDOWN)
-    uint32_t timestamp; // Timestamp of the last update in milliseconds
+    uint32_t ams_data_timestamp; // Timestamp of the last update in milliseconds
+    uint32_t bducu_timestamp; // Timestamp of the last update in milliseconds
     uint16_t cell_voltages[NUM_SLAVE][NUM_VCELL];
     uint16_t voltage_min; // Minimum voltage in millivolts
     uint16_t voltage_max; // Maximum voltage in millivolts
@@ -48,7 +49,7 @@ struct AmsState
     uint16_t raw_ac_voltage; // Raw AC voltage reading
     uint16_t raw_tc_voltage; // Raw TC voltage reading
     uint8_t fault_slave;
-    uint8_t fault_flags;
+    uint8_t fault_flags = 0;
     uint8_t command_flags[NUM_SLAVE];
 
 };
