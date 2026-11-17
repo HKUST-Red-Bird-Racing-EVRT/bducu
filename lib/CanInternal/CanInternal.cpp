@@ -57,7 +57,7 @@ void CanInternal::drainCanBuffer()
     // This function will clear the CAN buffer and reset the timestamps
 
     uint8_t expected_slave_index = 0;           // Expected slave index for the first frame
-    can_frame buffer[NUM_SLAVE] = {0,0,0}; // Temporary buffer to store received frames
+    can_frame buffer[NUM_SLAVE] = {}; // Temporary buffer to store received frames
 
     uint32_t start = millis();
     while (digitalRead(PIN_INT_0) == HIGH)
@@ -224,10 +224,16 @@ void CanInternal::sendSlaveCommand(uint8_t index)
 
     uint16_t address = CAN_INTERNAL_MASTER_COMMAND_ADDRESS + index; // Calculate the CAN ID for the specific slave
 
+    uint8_t flags = ams_state.command_flags[index]; //todo:
+    if (!ams_state.balance_allowed)
+    {
+        flags &= ~(CELLBAL_STATE_BIT | CELLBAL_ODD_BIT);
+    }
+
     can_frame send_frame = {
         address, // CAN ID for the slave
         3,       // Data length code (DLC)
-        ams_state.command_flags[index], // Command flags for the specific slave
+        flags,   // Command flags for the specific slave
         static_cast<uint8_t>(ams_state.voltage_min & 0xFF), // Lower byte of voltage_min
         static_cast<uint8_t>((ams_state.voltage_min >> 8) & 0xFF), // Upper byte of voltage_min
     };

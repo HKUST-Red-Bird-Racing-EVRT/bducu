@@ -80,6 +80,15 @@ void loop()
   ams_state.raw_ac_voltage = analogRead(PIN_AC_ISO); // Read raw AC voltage
   ams_state.raw_tc_voltage = analogRead(PIN_TC_ISO); // Read raw TC voltage
 
+  if (!ams_state.host_vcu)
+  {
+    can_external_helper.readBalanceAllow();
+  }
+  else
+  {
+    ams_state.balance_allowed = false;
+  }
+
   can_external_helper.sendState(); // Send the current state to the host (VCU or CHARGER)
   can_external_helper.sendDebug(); // Send debug information to the host (VCU or CHARGER)
 

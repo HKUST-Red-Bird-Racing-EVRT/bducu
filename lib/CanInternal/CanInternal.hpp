@@ -46,8 +46,7 @@ frame 0: 0x30x, frame 1: 0x31x, frame 2: 0x32x, ..., frame 5: 0x35x
 #define CAN_INTERNAL_MASTER_REQUEST_ADDRESS 0x250
 #define CAN_INTERNAL_SLAVE_ADDRESS 0x400
 
-#define NUM_SLAVE 10
-#define NUM_SLAVE_FRAME 6
+#define NUM_SLAVE_FRAME 6 // NUM_SLAVE is defined in AmsState.hpp
 
 #define CAN_TIMEOUT_MAX 500
 

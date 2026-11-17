@@ -37,6 +37,24 @@ void CanExternal::waitHost()
     ams_state.host_vcu = (read_frame.data[0]);     // Expected: 0x01 for VCU, 0x00 for CHARGER
 }
 
+void CanExternal::readBalanceAllow()
+{
+    can_frame read_frame;
+    while (can_external.readMessage(&read_frame) == MCP2515::ERROR_OK)
+    {
+        if (read_frame.can_id == CAN_EXTERNAL_BALANCE_ALLOW_ADDRESS)
+        {
+            ams_state.balance_allowed = true;
+            ams_state.balance_allow_timestamp = millis();
+        }
+    }
+
+    if (millis() - ams_state.balance_allow_timestamp > CAN_BALANCE_ALLOW_TIMEOUT)
+    {
+        ams_state.balance_allowed = false;
+    }
+}
+
 void CanExternal::sendVCUBDUCUData()
 {
     // Create a CAN frame to send the host data to the slaves

@@ -43,6 +43,9 @@ Determine Host Address (Determine host is VCU/CHARGER): 0x500
 #define CAN_EXTERNAL_STATE_ADDRESS 0x691
 #define CAN_EXTERNAL_DEBUG_ADDRESS 0x692
 
+#define CAN_EXTERNAL_BALANCE_ALLOW_ADDRESS 0x567 // From charger, empty frame: present = balancing allowed
+#define CAN_BALANCE_ALLOW_TIMEOUT 500 // ms, no frame = not allowed
+
 #define CAN_HOST_TIMEOUT 500 // ms
 
 constexpr uint32_t DEBUG_INTERVAL = 100; // ms
@@ -53,6 +56,7 @@ public:
     CanExternal(MCP2515 &can_external_, AmsState &ams_state_, Ams &ams_);
     CanExternal() = delete; // Delete the default constructor to prevent its use
     void waitHost();
+    void readBalanceAllow();
     void sendVCUBDUCUData();
     void sendVCUAMSData();
     void sendChargerData();

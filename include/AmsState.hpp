@@ -14,7 +14,13 @@
 
 #include <stdint.h>
 
-#define NUM_SLAVE 3 //  Change back to 10
+// Number of slave boards. Override per build with -DNUM_SLAVE=n in platformio.ini build_flags.
+// Slaves must be addressed 0 .. NUM_SLAVE-1. Max 10 (CAN IDs 0x3x0 - 0x3x9).
+#ifndef NUM_SLAVE
+#define NUM_SLAVE 10
+#endif
+static_assert(NUM_SLAVE >= 1 && NUM_SLAVE <= 10, "NUM_SLAVE must be 1..10 (CAN ID range 0x_x0 - 0x_x9)");
+
 #define NUM_VCELL 14
 #define NUM_NTC 5
 
@@ -34,6 +40,8 @@ struct AmsState
     bool fault_active = false;      // Fault TRUE/FALSE
     bool sdc_active = true;          // SDC TRUE/FALSE
     bool host_vcu;                  // Host VCU/CHARGER
+    bool balance_allowed = false;   // Charger is sending 0x567.
+    uint32_t balance_allow_timestamp = 0; // millis() of the last 0x567 frame
     AIRState air_state = AIRState::INIT; // AIR State (INIT, ACTIVE, SHUTDOWN)
     uint32_t ams_data_timestamp; // Timestamp of the last update in milliseconds
     uint32_t bducu_timestamp; // Timestamp of the last update in milliseconds
