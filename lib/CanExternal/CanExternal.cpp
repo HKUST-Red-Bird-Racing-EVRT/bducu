@@ -116,7 +116,7 @@ void CanExternal::sendVCUAMSData()
     can_external.sendMessage(&send_vcu_frame); // Send the CAN frame to the slave
 }
 
-void CanExternal::sendChargerData()
+void CanExternal::sendChargerOverallData()
 {
     // Create a CAN frame to send the host data to the slaves
     if (ams_state.fault_flags)
@@ -153,6 +153,94 @@ void CanExternal::sendChargerData()
     };
 
     can_external.sendMessage(&send_temperature_frame); // Send the CAN frame to the slave
+}
+
+void CanExternal::sendChargerIndividualData(uint8_t slave_index)
+{
+    if (slave_index >= NUM_SLAVE)
+    {
+        return;
+    }
+
+    can_frame send_battery_stat_0_frame = {
+        CAN_EXTERNAL_CHARGER_BATTERY_STAT_0_BASE_ADDRESS + slave_index, // CAN ID for the battery status
+        8,                              // Data length code (DLC)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][0] & 0xFF),          // Cell 0 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][0] >> 8) & 0xFF),   // Cell 0 voltage (high byte)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][1] & 0xFF),          // Cell 1 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][1] >> 8) & 0xFF),   // Cell 1 voltage (high byte)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][2] & 0xFF),          // Cell 2 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][2] >> 8) & 0xFF),   // Cell 2 voltage (high byte)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][3] & 0xFF),          // Cell 3 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][3] >> 8) & 0xFF)   // Cell 3 voltage (high byte)
+    };
+
+    can_external.sendMessage(&send_battery_stat_0_frame); // Send the CAN frame to the slave
+
+    can_frame send_battery_stat_1_frame = {
+        CAN_EXTERNAL_CHARGER_BATTERY_STAT_1_BASE_ADDRESS + slave_index, // CAN ID for the battery status
+        8,                              // Data length code (DLC)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][4] & 0xFF),          // Cell 4 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][4] >> 8) & 0xFF),   // Cell 4 voltage (high byte)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][5] & 0xFF),          // Cell 5 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][5] >> 8) & 0xFF),   // Cell 5 voltage (high byte)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][6] & 0xFF),          // Cell 6 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][6] >> 8) & 0xFF),   // Cell 6 voltage (high byte)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][7] & 0xFF),          // Cell 7 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][7] >> 8) & 0xFF)   // Cell 7 voltage (high byte)
+    };
+
+    can_external.sendMessage(&send_battery_stat_1_frame); // Send the CAN frame to the slave
+
+    can_frame send_battery_stat_2_frame = {
+        CAN_EXTERNAL_CHARGER_BATTERY_STAT_2_BASE_ADDRESS + slave_index, // CAN ID for the battery status
+        8,                              // Data length code (DLC)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][8] & 0xFF),          // Cell 8 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][8] >> 8) & 0xFF),   // Cell 8 voltage (high byte)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][9] & 0xFF),          // Cell 9 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][9] >> 8) & 0xFF),   // Cell 9 voltage (high byte)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][10] & 0xFF),          // Cell 10 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][10] >> 8) & 0xFF),   // Cell 10 voltage (high byte)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][11] & 0xFF),          // Cell 11 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][11] >> 8) & 0xFF)   // Cell 11 voltage (high byte)
+    };
+
+    can_external.sendMessage(&send_battery_stat_2_frame); // Send the CAN frame to the slave
+
+    can_frame send_battery_stat_3_frame = {
+        CAN_EXTERNAL_CHARGER_BATTERY_STAT_3_BASE_ADDRESS + slave_index, // CAN ID for the battery status
+        4,                              // Data length code (DLC)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][12] & 0xFF),          // Cell 12 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][12] >> 8) & 0xFF),   // Cell 12 voltage(high byte)
+        static_cast<uint8_t>(ams_state.cell_voltages[slave_index][13] & 0xFF),          // Cell 13 voltage (low byte)
+        static_cast<uint8_t>((ams_state.cell_voltages[slave_index][13] >> 8) & 0xFF)    // Cell 13 voltage (high byte)
+    };
+
+    can_external.sendMessage(&send_battery_stat_3_frame); // Send the CAN frame to the slave
+
+    can_frame send_temperature_stat_0_frame = {
+        CAN_EXTERNAL_CHARGER_TEMPERATURE_STAT_1_BASE_ADDRESS + slave_index, // CAN ID for the temperature status
+        8,                              // Data length code (DLC)
+        static_cast<uint8_t>(ams_state.ntc_temperatures[slave_index][0] & 0xFF),          // NTC 0 temperature (low byte)
+        static_cast<uint8_t>((ams_state.ntc_temperatures[slave_index][0] >> 8) & 0xFF),   // NTC 0 temperature (high byte)
+        static_cast<uint8_t>(ams_state.ntc_temperatures[slave_index][1] & 0xFF),          // NTC 1 temperature (low byte)
+        static_cast<uint8_t>((ams_state.ntc_temperatures[slave_index][1] >> 8) & 0xFF),   // NTC 1 temperature (high byte)
+        static_cast<uint8_t>(ams_state.ntc_temperatures[slave_index][2] & 0xFF),          // NTC 2 temperature (low byte)
+        static_cast<uint8_t>((ams_state.ntc_temperatures[slave_index][2] >> 8) & 0xFF),   // NTC 2 temperature (high byte)
+        static_cast<uint8_t>(ams_state.ntc_temperatures[slave_index][3] & 0xFF),          // NTC 3 temperature (low byte)
+        static_cast<uint8_t>((ams_state.ntc_temperatures[slave_index][3] >> 8) & 0xFF)    // NTC 3 temperature (high byte)
+    };
+
+    can_external.sendMessage(&send_temperature_stat_0_frame); // Send the CAN frame to the slave
+
+    can_frame send_temperature_stat_1_frame = {
+        CAN_EXTERNAL_CHARGER_TEMPERATURE_STAT_2_BASE_ADDRESS + slave_index, // CAN ID for the temperature status
+        2,                              // Data length code (DLC)
+        static_cast<uint8_t>(ams_state.ntc_temperatures[slave_index][4] & 0xFF),          // NTC 4 temperature (low byte)
+        static_cast<uint8_t>((ams_state.ntc_temperatures[slave_index][4] >> 8) & 0xFF)    // NTC 4 temperature (high byte)
+    };
+
+    can_external.sendMessage(&send_temperature_stat_1_frame); // Send the CAN frame to the slave
 }
 
 void CanExternal::sendWaitingTsAct()

@@ -123,7 +123,7 @@ void loop()
 
   if (!ams_state.host_vcu) // If the host is a charger, send charger data
   {
-    can_external_helper.sendChargerData();
+    can_external_helper.sendChargerOverallData();
   }
 
   else if (millis() - ams_state.ams_data_timestamp >= 100)

@@ -65,7 +65,8 @@ public:
     void readBalanceAllow();
     void sendVCUBDUCUData();
     void sendVCUAMSData();
-    void sendChargerData();
+    void sendChargerOverallData();
+    void sendChargerIndividualData(uint8_t slave_index);
     void sendWaitingTsAct();
     void sendState();
     void sendDebug();
