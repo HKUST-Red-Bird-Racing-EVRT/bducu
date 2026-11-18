@@ -6,9 +6,9 @@
  * @brief Main entry point for the Battery Disconnect Unit Control Unit (BDUCU) firmware.
  * @version 0.2
  * @date 2026-11-10
- * 
+ *
  * @copyright Copyright (c) 2026 Red Bird Racing
- * 
+ *
  */
 
 #include <Arduino.h>
@@ -58,10 +58,9 @@ void setup()
   digitalWrite(PIN_AMS_ERR, HIGH); // Active LOW, set AMS_ERR pin HIGH initially
   can_external_helper.sendDebug(); // Send initial debug information to the host (VCU or CHARGER)
 
-  ams.setAIR(AIRState::INIT); // Set initial AIR state to PRECHARGE
-  can_external_helper.waitHost();     // Determine if the host is VCU or CHARGER
+  ams.setAIR(AIRState::INIT);      // Set initial AIR state to PRECHARGE
+  can_external_helper.waitHost();  // Determine if the host is VCU or CHARGER
   ams.setAIR(AIRState::PRECHARGE); // Set initial AIR state to PRECHARGE
-  
 }
 
 void loop()
@@ -96,22 +95,9 @@ void loop()
 
   for (uint8_t frame_index = 0; frame_index < NUM_SLAVE_FRAME; ++frame_index)
   {
-    // if frame dropped, keep looping for 3-4 times to request the slave data again, and drain the buffer
-    uint8_t retry_count = 0;
-    while (retry_count < 4)
-    {
-      ams_state.fault_flags &= ~CAN_TIMEOUT_FAULT_BIT; // Clear the CAN timeout fault flag if no timeout occurred
-      can_internal_helper.requestSlaveData(frame_index);
-      can_internal_helper.drainCanBuffer();
-      if (ams_state.fault_flags & CAN_TIMEOUT_FAULT_BIT)
-      {
-        retry_count++;
-      }
-      else
-      {
-        break;
-      }
-    }
+    ams_state.fault_flags &= ~CAN_TIMEOUT_FAULT_BIT; // Clear the CAN timeout fault flag if no timeout occurred
+    can_internal_helper.requestSlaveData(frame_index);
+    can_internal_helper.drainCanBuffer();
   }
 
   if (ams_state.fault_flags)
@@ -128,6 +114,12 @@ void loop()
   ams.updateMaxMinCellVoltages();
   ams.updateMaxMinTemperatures();
   ams.updateBatterySOC(analogRead(PIN_HALL_LO), analogRead(PIN_HALL_HI));
+
+  // Command Slaves
+  for (uint8_t slave_index = 0; slave_index < NUM_SLAVE; ++slave_index)
+  {
+    can_internal_helper.sendSlaveCommand(slave_index);
+  }
 
   if (!ams_state.host_vcu) // If the host is a charger, send charger data
   {

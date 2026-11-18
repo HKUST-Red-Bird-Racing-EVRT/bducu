@@ -132,7 +132,7 @@ void CanExternal::sendChargerData()
     }
 
     can_frame send_battery_frame = {
-        CAN_EXTERNAL_CHARGER_BATTERY_STAT_ADDRESS, // CAN ID for the battery status
+        CAN_EXTERNAL_CHARGER_BATTERY_OVERALL_ADDRESS, // CAN ID for the battery status
         5,                              // Data length code (DLC)
         ams_state.battery_soc,                // Battery SOC
         static_cast<uint8_t>(ams_state.voltage_min & 0xFF),          // Minimum voltage (low byte)
@@ -144,7 +144,7 @@ void CanExternal::sendChargerData()
     can_external.sendMessage(&send_battery_frame); // Send the CAN frame to the slave
 
     can_frame send_temperature_frame = {
-        CAN_EXTERNAL_CHARGER_TEMPERATURE_STAT_ADDRESS, // CAN ID for the temperature status
+        CAN_EXTERNAL_CHARGER_TEMPERATURE_OVERALL_ADDRESS, // CAN ID for the temperature status
         4,                              // Data length code (DLC)
         static_cast<uint8_t>(ams_state.temperature_min & 0xFF),      // Minimum temperature (low byte)
         static_cast<uint8_t>((ams_state.temperature_min >> 8) & 0xFF), // Minimum temperature (high byte)

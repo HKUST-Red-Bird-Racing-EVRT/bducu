@@ -118,43 +118,55 @@ void CanInternal::packSlaveData(can_frame &rx_frame)
         switch (slave_frame)
         {
         case 0x00:
+            {
             ams_state.command_flags[slave_index] = rx_frame.data[0];                                         // Assuming command_flags is a 8-bit value
             ams_state.cellbal_states[slave_index] = rx_frame.data[1] | (rx_frame.data[2] << 8); // Assuming cellbal_states is a 16-bit value
             break;
+            }
 
         case 0x01:
+            {
             ams_state.cell_voltages[slave_index][0] = rx_frame.data[0] | (rx_frame.data[1] << 8); // Assuming cell_voltages is a 16-bit value
             ams_state.cell_voltages[slave_index][1] = rx_frame.data[2] | (rx_frame.data[3] << 8); // Assuming cell_voltages is a 16-bit value
             ams_state.cell_voltages[slave_index][2] = rx_frame.data[4] | (rx_frame.data[5] << 8); // Assuming cell_voltages is a 16-bit value
             ams_state.cell_voltages[slave_index][3] = rx_frame.data[6] | (rx_frame.data[7] << 8); // Assuming cell_voltages is a 16-bit value
             break;
+            }
 
         case 0x02:
+            {
             ams_state.cell_voltages[slave_index][4] = rx_frame.data[0] | (rx_frame.data[1] << 8); // Assuming cell_voltages is a 16-bit value
             ams_state.cell_voltages[slave_index][5] = rx_frame.data[2] | (rx_frame.data[3] << 8); // Assuming cell_voltages is a 16-bit value
             ams_state.cell_voltages[slave_index][6] = rx_frame.data[4] | (rx_frame.data[5] << 8); // Assuming cell_voltages is a 16-bit value
             ams_state.cell_voltages[slave_index][7] = rx_frame.data[6] | (rx_frame.data[7] << 8); // Assuming cell_voltages is a 16-bit value
             break;
+            }
 
         case 0x03:
+            {
             ams_state.cell_voltages[slave_index][8] = rx_frame.data[0] | (rx_frame.data[1] << 8);  // Assuming cell_voltages is a 16-bit value
             ams_state.cell_voltages[slave_index][9] = rx_frame.data[2] | (rx_frame.data[3] << 8);  // Assuming cell_voltages is a 16-bit value
             ams_state.cell_voltages[slave_index][10] = rx_frame.data[4] | (rx_frame.data[5] << 8); // Assuming cell_voltages is a 16-bit value
             ams_state.cell_voltages[slave_index][11] = rx_frame.data[6] | (rx_frame.data[7] << 8); // Assuming cell_voltages is a 16-bit value
             break;
+            }
 
         case 0x04:
+            {
             ams_state.cell_voltages[slave_index][12] = rx_frame.data[0] | (rx_frame.data[1] << 8);   // Assuming cell_voltages is a 16-bit value
             ams_state.cell_voltages[slave_index][13] = rx_frame.data[2] | (rx_frame.data[3] << 8);   // Assuming cell_voltages is a 16-bit value
             ams_state.ntc_temperatures[slave_index][0] = rx_frame.data[4] | (rx_frame.data[5] << 8); // Assuming ntc_temperatures is a 16-bit value
             ams_state.ntc_temperatures[slave_index][1] = rx_frame.data[6] | (rx_frame.data[7] << 8); // Assuming ntc_temperatures is a 16-bit valuE
             break;
+            }
 
         case 0x05:
+            {
             ams_state.ntc_temperatures[slave_index][2] = rx_frame.data[0] | (rx_frame.data[1] << 8); // Assuming ntc_temperatures is a 16-bit value
             ams_state.ntc_temperatures[slave_index][3] = rx_frame.data[2] | (rx_frame.data[3] << 8); // Assuming ntc_temperatures is a 16-bit value
             ams_state.ntc_temperatures[slave_index][4] = rx_frame.data[4] | (rx_frame.data[5] << 8); // Assuming ntc_temperatures is a 16-bit value
             break;
+            }
 
         default:
             break;
