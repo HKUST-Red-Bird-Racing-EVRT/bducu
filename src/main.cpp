@@ -94,17 +94,16 @@ void loop()
 
   ams.updateAIR(); // Update the AIR state based on conditions
 
-  /*
   for (uint8_t frame_index = 0; frame_index < NUM_SLAVE_FRAME; ++frame_index)
   {
     // if frame dropped, keep looping for 3-4 times to request the slave data again, and drain the buffer
     uint8_t retry_count = 0;
     while (retry_count < 4)
     {
-      ams.fault_flags &= ~CAN_TIMEOUT_FAULT_BIT; // Clear the CAN timeout fault flag if no timeout occurred
+      ams_state.fault_flags &= ~CAN_TIMEOUT_FAULT_BIT; // Clear the CAN timeout fault flag if no timeout occurred
       can_internal_helper.requestSlaveData(frame_index);
       can_internal_helper.drainCanBuffer();
-      if (ams.fault_flags & CAN_TIMEOUT_FAULT_BIT)
+      if (ams_state.fault_flags & CAN_TIMEOUT_FAULT_BIT)
       {
         retry_count++;
       }
@@ -115,7 +114,7 @@ void loop()
     }
   }
 
-  if (ams.fault_flags)
+  if (ams_state.fault_flags)
   {
     digitalWrite(PIN_AMS_ERR, HIGH); // Set AMS_ERR pin high if any fault is active
   }
@@ -123,13 +122,12 @@ void loop()
   {
     digitalWrite(PIN_AMS_ERR, LOW); // Set AMS_ERR pin low if no fault is active
   }
-  
+  */
 
   // Normal operation, e.g., send data to VCU, perform other tasks, etc.
-  ams_helper.updateMaxMinCellVoltages();
-  ams_helper.updateMaxMinTemperatures();
-  ams_helper.updateBatterySOC(analogRead(PIN_HALL_LO), analogRead(PIN_HALL_HI));
-  */
+  ams.updateMaxMinCellVoltages();
+  ams.updateMaxMinTemperatures();
+  ams.updateBatterySOC(analogRead(PIN_HALL_LO), analogRead(PIN_HALL_HI));
 
   if (!ams_state.host_vcu) // If the host is a charger, send charger data
   {
