@@ -44,7 +44,7 @@ void setup()
   can_internal.setNormalMode();
 
   can_external.reset();
-  can_external.setBitrate(CAN_500KBPS, MCP_20MHZ);
+  can_external.setBitrate(CAN_250KBPS, MCP_20MHZ);
   can_external.setNormalMode();
 
   pinMode(PIN_HALL_HI, INPUT);
@@ -59,7 +59,21 @@ void setup()
   can_external_helper.sendDebug(); // Send initial debug information to the host (VCU or CHARGER)
 
   ams.setAIR(AIRState::INIT);      // Set initial AIR state to PRECHARGE
-  can_external_helper.waitHost();  // Determine if the host is VCU or CHARGER
+  //can_external_helper.waitHost();  // Determine if the host is VCU or CHARGER
+
+  can_frame charger_frame = {
+    0x18FF50E5 | CAN_EFF_FLAG, // Extended ID for charger
+    8,                         // Data length
+    0x88,
+    0x08,
+    0x0A,
+    0x00,
+    0x01,
+    0,0,0
+  };
+
+  can_external.sendMessage(&charger_frame);
+
   ams.setAIR(AIRState::PRECHARGE); // Set initial AIR state to PRECHARGE
 }
 
@@ -79,7 +93,16 @@ void loop()
   ams_state.raw_ac_voltage = analogRead(PIN_AC_ISO); // Read raw AC voltage
   ams_state.raw_tc_voltage = analogRead(PIN_TC_ISO); // Read raw TC voltage
 
-  if (!ams_state.host_vcu)
+  uint16_t current = analogRead(PIN_HALL_HI);
+  can_frame hall_frame = {
+      0x699,
+      2,
+      current & 0xFF,
+      (current >> 8) & 0xFF};
+
+  can_external.sendMessage(&hall_frame);
+
+  if (false && !ams_state.host_vcu)
   {
     can_external_helper.readBalanceAllow();
   }
@@ -93,48 +116,62 @@ void loop()
 
   ams.updateAIR(); // Update the AIR state based on conditions
 
-  for (uint8_t frame_index = 0; frame_index < NUM_SLAVE_FRAME; ++frame_index)
+  // for (uint8_t frame_index = 0; frame_index < NUM_SLAVE_FRAME; ++frame_index)
+  // {
+  //   ams_state.fault_flags &= ~CAN_TIMEOUT_FAULT_BIT; // Clear the CAN timeout fault flag if no timeout occurred
+  //   can_internal_helper.requestSlaveData(frame_index);
+  //   can_internal_helper.drainCanBuffer();
+  // }
+
+  can_frame rx_slave = {0};
+  while (can_internal.readMessage(&rx_slave) == MCP2515::ERROR_OK)
   {
-    ams_state.fault_flags &= ~CAN_TIMEOUT_FAULT_BIT; // Clear the CAN timeout fault flag if no timeout occurred
-    can_internal_helper.requestSlaveData(frame_index);
-    can_internal_helper.drainCanBuffer();
+    if (rx_slave.can_id == 0x100 && (rx_slave.data[0] & 0b1100))
+    {
+      digitalWrite(PIN_AMS_ERR, LOW);
+    }
   }
 
-  if (ams_state.fault_flags)
-  {
-    digitalWrite(PIN_AMS_ERR, HIGH); // Set AMS_ERR pin high if any fault is active
-  }
-  /*else
-  {
-    digitalWrite(PIN_AMS_ERR, LOW); // Set AMS_ERR pin low if no fault is active
-  }
-  */
+  // if (ams_state.fault_flags)
+  // {
+  //   digitalWrite(PIN_AMS_ERR, LOW);
+  // }
+  // /*else
+  // {
+  //   digitalWrite(PIN_AMS_ERR, HIGH);
+  // }
+  // */
 
-  // Normal operation, e.g., send data to VCU, perform other tasks, etc.
-  ams.updateMaxMinCellVoltages();
-  ams.updateMaxMinTemperatures();
-  ams.updateBatterySOC(analogRead(PIN_HALL_LO), analogRead(PIN_HALL_HI));
+  // for (uint8_t slave_index = 0; slave_index < NUM_SLAVE; ++slave_index)
+  // {
+  //   can_external_helper.sendChargerIndividualData();
+  // }
 
-  // Command Slaves
-  for (uint8_t slave_index = 0; slave_index < NUM_SLAVE; ++slave_index)
-  {
-    can_internal_helper.sendSlaveCommand(slave_index);
-  }
+  // // Normal operation, e.g., send data to VCU, perform other tasks, etc.
+  // ams.updateMaxMinCellVoltages();
+  // ams.updateMaxMinTemperatures();
+  // ams.updateBatterySOC(analogRead(PIN_HALL_LO), analogRead(PIN_HALL_HI));
 
-  if (!ams_state.host_vcu) // If the host is a charger, send charger data
-  {
-    can_external_helper.sendChargerOverallData();
-  }
+  // // Command Slaves
+  // for (uint8_t slave_index = 0; slave_index < NUM_SLAVE; ++slave_index)
+  // {
+  //   can_internal_helper.sendSlaveCommand(slave_index);
+  // }
 
-  else if (millis() - ams_state.ams_data_timestamp >= 100)
-  {
-    can_external_helper.sendVCUAMSData();
-    ams_state.ams_data_timestamp = millis(); // Update the timestamp after sending data
-  }
+  // if (!ams_state.host_vcu) // If the host is a charger, send charger data
+  // {
+  //   can_external_helper.sendChargerOverallData();
+  // }
 
-  else if (millis() - ams_state.bducu_timestamp >= 10)
-  {
-    can_external_helper.sendVCUBDUCUData();
-    ams_state.bducu_timestamp = millis(); // Update the timestamp after sending data
-  }
+  // else if (millis() - ams_state.ams_data_timestamp >= 100)
+  // {
+  //   can_external_helper.sendVCUAMSData();
+  //   ams_state.ams_data_timestamp = millis(); // Update the timestamp after sending data
+  // }
+
+  // else if (millis() - ams_state.bducu_timestamp >= 10)
+  // {
+  //   can_external_helper.sendVCUBDUCUData();
+  //   ams_state.bducu_timestamp = millis(); // Update the timestamp after sending data
+  // }
 }
