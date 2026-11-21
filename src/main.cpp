@@ -58,25 +58,26 @@ void setup()
   digitalWrite(PIN_AMS_ERR, HIGH); // Active LOW, set AMS_ERR pin HIGH initially
   can_external_helper.sendDebug(); // Send initial debug information to the host (VCU or CHARGER)
 
-  ams.setAIR(AIRState::INIT);      // Set initial AIR state to PRECHARGE
-  //can_external_helper.waitHost();  // Determine if the host is VCU or CHARGER
+  ams.setAIR(AIRState::INIT); // Set initial AIR state to PRECHARGE
+  // can_external_helper.waitHost();  // Determine if the host is VCU or CHARGER
 
+  delay(1000);
+  ams.setAIR(AIRState::PRECHARGE); // Set initial AIR state to PRECHARGE
+
+  delay(5000);
   can_frame charger_frame = {
-    0x18FF50E5 | CAN_EFF_FLAG, // Extended ID for charger
-    8,                         // Data length
-    0x88,
-    0x08,
-    0x0A,
-    0x00,
-    0x01,
-    0,0,0
-  };
+      0x18FF50E5 | CAN_EFF_FLAG, // Extended ID for charger
+      8,                         // Data length
+      0x88,
+      0x08,
+      0x0A,
+      0x00,
+      0x01,
+      0, 0, 0};
 
   can_external.sendMessage(&charger_frame);
-
-  ams.setAIR(AIRState::PRECHARGE); // Set initial AIR state to PRECHARGE
 }
-
+uint32_t time_old = 0;
 void loop()
 {
   // put your main code here, to run repeatedly:
@@ -130,6 +131,28 @@ void loop()
     {
       digitalWrite(PIN_AMS_ERR, LOW);
     }
+  }
+
+  uint32_t time_now = millis();
+  if (time_now - time_old > 100)
+  {
+    time_old = time_now;
+    bool mod2 = time_now % 2;
+    bool mod3 = time_now % 3;
+    bool mod5 = time_now % 5;
+
+    can_frame fake_frame = {
+        0x350,
+        8,
+        0x0A + mod2,
+        0x0F,
+        0x3A + mod3,
+        0x0F,
+        0x12 + mod5,
+        0x02,
+        0x3A - mod5,
+        0x02};
+    can_external.sendMessage(&fake_frame);
   }
 
   // if (ams_state.fault_flags)
